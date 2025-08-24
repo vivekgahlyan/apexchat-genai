@@ -1,0 +1,410 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;      /* lock component to viewport height */
+  overflow: hidden;   /* prevent outer/page scroll from this component */
+  box-sizing: border-box;
+
+  /* Local defaults for component theme (can be overridden by parent) */
+  --bg: #f7f8fb;
+  --brand: #e6cfe1;
+  --text: #0f1724;
+  --muted: #edf2f7;
+  --shadow: 0 6px 18px rgba(12, 20, 40, 0.08);
+  --radius: 12px;
+}
+
+/* ensure consistent box sizing inside the component */
+:host *,
+:host *::before,
+:host *::after {
+  box-sizing: inherit;
+}
+
+.wrap {
+  /* use remaining space inside the host and avoid causing page scroll */
+  flex: 1;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* allow children to shrink (important for flex + overflow) */
+}
+
+.header {
+  height: 64px;               /* slightly smaller so header sits closer to surface */
+  display: flex;
+  align-items: center;        /* center header children vertically */
+  background: var(--brand);
+  padding: 0;                 /* rely on fixed height for spacing */
+  box-shadow: var(--shadow);
+}
+
+/* container matches header height and prevents overflow */
+.container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  overflow: hidden;           /* avoid horizontal bleed */
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.brand .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+  position: relative;
+  background: linear-gradient(135deg, #6ee7b7 0%, #10b981 60%, #059669 100%);
+  box-shadow:
+    0 6px 12px rgba(5,150,105,0.12),
+    0 0 0 4px rgba(16,185,129,0.12);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+/* subtle pulsing ring behind the dot */
+.brand .dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: 0 0 0 0 rgba(16,185,129,0.28);
+  animation: dot-pulse 2000ms infinite ease-out;
+  z-index: -1;
+}
+
+/* stop animation if user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .brand .dot::after {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.12);
+  }
+}
+
+@keyframes dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16,185,129,0.28);
+    transform: scale(1);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(16,185,129,0);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16,185,129,0);
+    transform: scale(1);
+  }
+}
+
+.info-icon {
+  margin-left: 8px;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.85);
+  cursor: pointer;
+}
+
+.profile-pic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+.profile-pic img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 1px solid #00b1d9; /* black circular boundary as requested earlier */
+  background: #f3f4f6; /* placeholder bg while loading */
+  display: block;
+}
+
+.main {
+  flex: 1;                    /* take remaining height between header and footer */
+  display: flex;
+  justify-content: center;    /* center horizontally */
+  align-items: center;        /* center vertically within the available space */
+  padding: 1.5rem 0;
+  min-height: 0;              /* important to constrain children in flex layout */
+  overflow: hidden;           /* prevent outer scroll; messages scroll internally */
+}
+
+.surface {
+  margin: 8px 0; /* reduced vertical gap */
+  background: var(--bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 720px;
+  padding: 1.25rem;
+  /* constrain height so the whole component never exceeds viewport */
+  max-height: calc(100vh - 64px - 24px); /* account for header + small breathing room */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* ensures internal scrolling only */
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  /* let panel expand to surface's available height; messages handle scrolling */
+  flex: 1 1 auto;
+  min-height: 0; /* allow children to scroll properly inside flex */
+  position: relative;
+}
+
+/* message list area */
+.messages {
+  flex: 1 1 auto;
+  overflow-y: auto;   /* internal scroll only */
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+  padding-right: 8px;
+  padding-left: 4px;
+  min-height: 0;
+}
+
+/* message row alignment */
+.msg {
+  margin-bottom: 0.75rem;
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.msg.user {
+  justify-content: flex-end;
+}
+
+.msg.ai {
+  justify-content: flex-start;
+}
+
+.msg.user .bubble {
+  background: var(--brand);
+  color: black;
+}
+
+.msg.ai .bubble {
+  background: #ffffff;
+  border: 1px solid rgba(15,23,36,0.06);
+  color: var(--text);
+}
+
+/* bubble base */
+.bubble {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  max-width: 78%;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+/* scroll to bottom floating button */
+.scroll-bottom {
+  position: absolute;
+  right: 16px;
+  bottom: 86px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* composer (input area) */
+.composer {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(15,23,36,0.04);
+  background: transparent;
+}
+
+.inputRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.inputRow input[type="text"],
+.inputRow textarea {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: calc(var(--radius) - 4px);
+  border: 1px solid rgba(15,23,36,0.06);
+  font-size: 1rem;
+  outline: none;
+  background: #fff;
+  color: var(--text);
+  min-height: 44px;
+}
+
+.inputRow input[type="text"]:focus,
+.inputRow textarea:focus {
+  box-shadow: 0 2px 8px rgba(11,95,255,0.12);
+  border-color: rgba(11,95,255,0.7);
+}
+
+.submitBtn {
+  background: var(--brand);
+  border: none;
+  border-radius: calc(var(--radius) - 6px);
+  padding: 0.6rem 0.85rem;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.submitBtn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* round info button with black circular border and bottom tooltip */
+.info-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin-left: 8px;
+  border: 2px solid #753e69; /* black circular boundary */
+  background: rgba(255,255,255,0.95);
+  color: #000;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.info-btn:focus,
+.info-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(11,95,255,0.12);
+  transform: translateY(-1px);
+}
+
+/* small "i" inside the circle */
+.info-btn .info-icon {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+  display: inline-block;
+  color: black;
+  justify-content: center;
+  padding-right: 40%;
+}
+
+/* tooltip that appears below the button */
+.info-btn .tooltip {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px); /* place below the button */
+  transform: translateX(-50%) translateY(6px);
+  background: rgba(17,24,39,0.95);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+  z-index: 30;
+}
+
+/* small arrow pointing up from tooltip to button */
+.info-btn .tooltip::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent rgba(17,24,39,0.95) transparent;
+}
+
+/* show tooltip on hover or keyboard focus */
+.info-btn:hover .tooltip,
+.info-btn:focus .tooltip,
+.info-btn:active .tooltip,
+.info-btn:focus-visible .tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .info-btn,
+  .info-btn .tooltip {
+    transition: none;
+  }
+}
+
+/* responsive tweaks */
+@media (max-width: 640px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .surface {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .panel {
+    height: calc(100vh - 180px);
+  }
+
+  .bubble {
+    max-width: 84%;
+  }
+
+  .scroll-bottom {
+    right: 12px;
+    bottom: 96px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.brand-name {
+  display: flex;
+  align-items: center;
+  width: 2px;
+  height: 2px;
+}

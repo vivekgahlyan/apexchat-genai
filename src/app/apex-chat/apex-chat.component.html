@@ -1,0 +1,52 @@
+<div class="wrap">
+  <header class="header">
+    <div class="container" aria-label="Site header">
+      <div class="brand" aria-label="Brand: apexchat.ai">
+        <span class="dot" aria-hidden="true"></span>
+        <span><i><b>apexchat</b>.ai</i></span>
+      </div>
+      <div class="profile-pic" (click)="profileClicked()">
+        <span style="margin-right: 10px;"><b><i><span style="color: rgb(57, 57, 193);">Linked</span><span style="color: white;">In</span></i></b></span>
+        <img src="/public/assets/vivek_pp.jpg" alt="Profile Picture" />
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="surface" role="region" aria-label="Chat Section">
+      <div class="panel">
+        <div #messagesContainer id="messages" class="messages" (scroll)="onScroll()">
+          <div *ngFor="let msg of messages" class="msg" [ngClass]="msg.who">
+            <!-- Bot messages -->
+            <ng-container *ngIf="msg.who === 'bot'; else userMsg">
+              <div class="bubble">
+                <div [appTypingEffect]="msg.text" [speed]="1" (typingUpdate)="onTypingUpdate(msg, $event)"
+                  aria-hidden="true">
+                </div>
+                <markdown [data]="msg.typed ?? msg.text"></markdown>
+              </div>
+            </ng-container>
+
+            <!-- User messages -->
+            <ng-template #userMsg>
+              <div class="bubble">
+                {{ msg.text }}
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="composer">
+          <form class="inputRow" (ngSubmit)="sendMessage()" autocomplete="off">
+            <input type="text" [(ngModel)]="userInput" name="message" placeholder="Ask anything..." required />
+            <button type="submit" class="submitBtn" aria-label="Send">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 4l16 8-16 8 4-8z" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
