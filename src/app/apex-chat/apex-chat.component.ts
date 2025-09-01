@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, OnDestroy, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environment/environment';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { TypingEffectDirective } from './custom-directives/typing-effect.directive';
-import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
+import { MarkdownComponent, MarkdownService } from 'ngx-markdown';
+import { ChatService } from '../services/chat.service';
 
 const genAI = new GoogleGenerativeAI(environment.apiKeyGemini);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -17,19 +18,24 @@ interface Message {
 
 @Component({
   selector: 'app-apex-chat',
+  providers: [ChatService,],
   imports: [FormsModule, CommonModule, TypingEffectDirective, MarkdownComponent],
   templateUrl: './apex-chat.component.html',
   styleUrl: './apex-chat.component.css'
 })
-export class ApexChatComponent {
+export class ApexChatComponent{
   @ViewChild('messagesContainer', { static: false }) messagesContainer!: ElementRef<HTMLDivElement>;
+  chatService = inject(ChatService);
   userInput: string = '';
   messages: Message[] = [
-    { text: 'Hey! This is <b>apexchat.ai</b>, your all time AI companion.<br> How can I assist you today?', who: 'bot' }
+    { text: 'Hey! This is <b>apexchat</b>.AI, your all time AI companion.<br> How can I assist you today?', who: 'bot' }
   ];
   showScrollBtn = false;
   geminiResponse: string = '';
   typedText: any;
+  
+  private thinkingIndex: number | null = null;
+  private THINKING_TEXT = 'Thinking...';
 
   onTypingUpdate(msg: any, typed: string) {
     msg.typed = typed;
@@ -71,11 +77,36 @@ export class ApexChatComponent {
     this.userInput = '';
     this.scrollToBottom();
 
+    this.messages.push({ text: this.THINKING_TEXT, who: 'bot', typed: '' });
+    this.thinkingIndex = this.messages.length - 1;
+    this.scrollToBottom();
+
     setTimeout(async () => {
-      const result = await model.generateContent([userText]);
-      this.geminiResponse = result.response.text();
-      this.messages.push({ text: this.geminiResponse, who: 'bot' });
-      this.scrollToBottom();
+      try {
+        const result = await model.generateContent([userText]);
+        this.geminiResponse = result.response.text();
+
+        if (result.response.text().length > 0) {
+          this.chatService.markRequestHit().subscribe();
+        }
+
+        if (this.thinkingIndex !== null && this.messages[this.thinkingIndex]) {
+          this.messages[this.thinkingIndex] = { text: this.geminiResponse, who: 'bot' };
+        } else {
+          this.messages.push({ text: this.geminiResponse, who: 'bot' });
+        }
+      } catch (err) {
+        const errMsg = "Sorry, I couldn't get a response.";
+        if (this.thinkingIndex !== null && this.messages[this.thinkingIndex]) {
+          this.messages[this.thinkingIndex] = { text: errMsg, who: 'bot' };
+        } else {
+          this.messages.push({ text: errMsg, who: 'bot' });
+        }
+        console.error('API error:', err);
+      } finally {
+        this.thinkingIndex = null;
+        this.scrollToBottom();
+      }
     }, 250);
   }
 

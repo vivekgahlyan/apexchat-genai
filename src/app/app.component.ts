@@ -3,10 +3,12 @@ import { RouterOutlet } from '@angular/router';
 import { ApexChatComponent } from './apex-chat/apex-chat.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ApexChatComponent, FormsModule, CommonModule],
+  providers: [],
+  imports: [ApexChatComponent, FormsModule, CommonModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
