@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ApexChatComponent } from './apex-chat/apex-chat.component';
+import { ApexChatComponent } from './feature/apex-chat/apex-chat.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';

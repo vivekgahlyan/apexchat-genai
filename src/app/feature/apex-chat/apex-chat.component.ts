@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, inject, OnDestroy, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { environment } from '../../environment/environment';
+import { environment } from '../../../environment/environment';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { TypingEffectDirective } from './custom-directives/typing-effect.directive';
 import { MarkdownComponent, MarkdownService } from 'ngx-markdown';
-import { ChatService } from '../services/chat.service';
+import { ChatService } from '../../core/services/chat.service';
 
 const genAI = new GoogleGenerativeAI(environment.apiKeyGemini);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
