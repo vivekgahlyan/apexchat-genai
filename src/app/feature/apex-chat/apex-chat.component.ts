@@ -8,7 +8,7 @@ import { MarkdownComponent, MarkdownService } from 'ngx-markdown';
 import { ChatService } from '../../core/services/chat.service';
 
 const genAI = new GoogleGenerativeAI(environment.apiKeyGemini);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
 interface Message {
   text: string;
